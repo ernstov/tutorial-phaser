@@ -1,0 +1,44 @@
+namespace: tutorial-phaser
+
+client:
+  defines: runnable
+  metadata:
+    name: client
+    description: Frontend service for the multiplayer game, built with Phaser.
+    icon: https://emojiapi.dev/api/v1/robot.svg
+  containers:
+    client:
+      image: env-2657.registry.local/client:master-8084c30
+      build: .
+      dockerfile: Dockerfile.client
+  services:
+    http-server:
+      description: HTTP server listening port
+      container: client
+      port: 8080
+      host-port: 8080
+      publish: true
+      protocol: tcp
+  connections: {}
+  variables: {}
+
+server:
+  defines: runnable
+  metadata:
+    name: server
+    description: Backend service for the multiplayer game, using Colyseus framework.
+    icon: https://emojiapi.dev/api/v1/robot.svg
+  containers:
+    server:
+      image: env-2657.registry.local/server:master-8084c30
+      build: .
+      dockerfile: Dockerfile.server
+  services: {}
+  connections: {}
+  variables: {}
+
+stack:
+  defines: group
+  members:
+    - tutorial-phaser/client
+    - tutorial-phaser/server
