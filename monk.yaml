@@ -1,0 +1,21 @@
+namespace: tutorial-phaser
+
+client:
+  defines: runnable
+  metadata:
+    name: client
+    description: Frontend service using Phaser and Colyseus.js, built with Parcel.
+    icon: https://emojiapi.dev/api/v1/robot.svg
+  containers:
+    client:
+      image: env-2669.registry.local/client:master-8084c30
+      build: .
+      dockerfile: Dockerfile.client
+  services: {}
+  connections: {}
+  variables: {}
+
+stack:
+  defines: group
+  members:
+    - tutorial-phaser/client
