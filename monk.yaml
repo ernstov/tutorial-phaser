@@ -1,0 +1,91 @@
+namespace: tutorial-phaser
+
+redis:
+  defines: runnable
+  inherits: redis/redis
+  metadata:
+    name: redis
+    description: >-
+      Redis server used for session management, caching, or as a message broker
+      by the server.
+    icon: >-
+      https://cdn.icon-icons.com/icons2/2415/PNG/512/redis_original_wordmark_logo_icon_146369.png
+  variables:
+    redis_disable_commands:
+      type: string
+      value: FLUSHDB,FLUSHALL,CONFIG
+      description: ''
+    redis_empty_password:
+      type: string
+      value: 'yes'
+      description: ''
+    redis_instance_name:
+      type: string
+      value: master
+      description: ''
+    redis_io_thread:
+      type: string
+      value: '1'
+      description: ''
+    redis_io_threads_do_reads:
+      type: string
+      value: 'yes'
+      description: ''
+    redis_port:
+      type: int
+      value: 6379
+      description: ''
+
+client:
+  defines: runnable
+  metadata:
+    name: client
+    description: Phaser game client with Colyseus.js for multiplayer capabilities.
+    icon: https://emojiapi.dev/api/v1/robot.svg
+  containers:
+    client:
+      image: env-2758.registry.local/client:master-8084c30
+      build: .
+      dockerfile: Dockerfile.client
+  services:
+    client-websocket-port:
+      description: Port exposed by the client service for WebSocket connections.
+      container: client
+      port: 1234
+      host-port: 1234
+      publish: true
+      protocol: tcp
+  connections:
+    websocket-server-connection:
+      target: tutorial-phaser/server
+      service: '2567'
+      optional: true
+      description: WebSocket connection to the server service for multiplayer capabilities.
+  variables: {}
+
+server:
+  defines: runnable
+  metadata:
+    name: server
+    description: Colyseus WebSocket server for multiplayer gaming.
+    icon: https://emojiapi.dev/api/v1/robot.svg
+  containers:
+    server:
+      image: env-2758.registry.local/server:master-8084c30
+      build: .
+      dockerfile: Dockerfile.server
+  services: {}
+  connections: {}
+  variables:
+    port:
+      env: PORT
+      type: int
+      value: 2567
+      description: The port on which the server service listens
+
+stack:
+  defines: group
+  members:
+    - tutorial-phaser/redis
+    - tutorial-phaser/client
+    - tutorial-phaser/server
