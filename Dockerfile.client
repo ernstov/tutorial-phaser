@@ -1,0 +1,23 @@
+FROM node:14
+
+# Create app directory
+WORKDIR /usr/src/app
+
+# Install app dependencies
+COPY client/package*.json ./
+RUN npm install
+
+# Bundle app source
+COPY client/ .
+
+# Build the app
+RUN npm run build
+
+# Install http-server to serve the app
+RUN npm install -g http-server
+
+# Expose the port the app runs on
+EXPOSE 8080
+
+# Define the command to run the app
+CMD [ "http-server", "dist" ]
