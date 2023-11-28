@@ -1,0 +1,23 @@
+FROM node:14
+
+# Create app directory
+WORKDIR /usr/src/app
+
+# Install app dependencies
+COPY client/package*.json ./
+RUN npm install
+
+# Bundle app source
+COPY client/ .
+
+# Build the app
+RUN npm run build
+
+# Install `serve` to serve the app on port 80
+RUN npm install -g serve
+
+# Define the network port that this container will listen on at runtime.
+EXPOSE 80
+
+# Define the command to run the app using `serve`
+CMD [ "serve", "-s", "build", "-l", "80" ]
