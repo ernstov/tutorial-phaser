@@ -1,0 +1,61 @@
+namespace: tutorial-phaser
+
+client:
+  defines: runnable
+  metadata:
+    name: client
+    description: Web client using Phaser and Colyseus.js, built with Parcel.
+    icon: https://emojiapi.dev/api/v1/robot.svg
+  containers:
+    client:
+      image: env-3551.registry.local/client:master-8084c30
+      build: .
+      dockerfile: Dockerfile.client
+  services:
+    parcel-development-server:
+      description: Parcel development server for serving the web client
+      container: client
+      port: 1234
+      host-port: 1234
+      publish: true
+      protocol: tcp
+  connections:
+    websocket-connection:
+      target: tutorial-phaser/server
+      service: server-port
+      optional: true
+      description: WebSocket connection to the server service
+  variables: {}
+
+server:
+  defines: runnable
+  metadata:
+    name: server
+    description: Colyseus server for multiplayer game logic.
+    icon: https://emojiapi.dev/api/v1/robot.svg
+  containers:
+    server:
+      image: env-3551.registry.local/server:master-8084c30
+      build: .
+      dockerfile: Dockerfile.server
+  services:
+    server-port:
+      description: Port for incoming game server connections
+      container: server
+      port: $port
+      host-port: $port
+      publish: true
+      protocol: tcp
+  connections: {}
+  variables:
+    port:
+      env: PORT
+      type: int
+      value: 2567
+      description: The port on which the server service listens for incoming connections.
+
+stack:
+  defines: group
+  members:
+    - tutorial-phaser/client
+    - tutorial-phaser/server
