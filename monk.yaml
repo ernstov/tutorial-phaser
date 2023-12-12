@@ -1,0 +1,71 @@
+namespace: tutorial-phaser
+
+client:
+  defines: runnable
+  metadata:
+    name: client
+    description: A Phaser game client using Colyseus.js, served with Parcel.
+    icon: https://emojiapi.dev/api/v1/robot.svg
+  containers:
+    client:
+      image: env-3590.registry.local/client:master-625165c
+      build: .
+      dockerfile: Dockerfile.client
+  services:
+    parcel-development-server:
+      description: Parcel development server for serving the Phaser game client
+      container: client
+      port: 1234
+      host-port: 1234
+      publish: true
+      protocol: tcp
+  connections:
+    websocket-server-connection:
+      target: tutorial-phaser/server
+      service: websocket-port
+      optional: true
+      description: Connection to the WebSocket server for multiplayer game functionality
+  variables:
+    backend-ws-url:
+      env: BACKEND_WS_URL
+      type: string
+      value: <- connection-port("websocket-server-connection")
+      description: WebSocket URL for the backend service
+
+server:
+  defines: runnable
+  metadata:
+    name: server
+    description: A WebSocket server using Colyseus for multiplayer game functionality.
+    icon: https://emojiapi.dev/api/v1/robot.svg
+  containers:
+    server:
+      image: env-3590.registry.local/server:master-625165c
+      build: .
+      dockerfile: Dockerfile.server
+  services:
+    websocket-port:
+      description: WebSocket port for multiplayer game functionality
+      container: server
+      port: $port
+      host-port: $port
+      publish: true
+      protocol: tcp
+  connections:
+    websocket-connection:
+      target: tutorial-phaser/client
+      service: '!!!SETME!!!'
+      optional: true
+      description: WebSocket connection to the client service
+  variables:
+    port:
+      env: PORT
+      type: int
+      value: <- connection-port("websocket-connection")
+      description: The port on which the server service listens for connections
+
+stack:
+  defines: group
+  members:
+    - tutorial-phaser/client
+    - tutorial-phaser/server

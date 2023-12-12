@@ -1,0 +1,24 @@
+FROM node:14
+
+# Create app directory
+WORKDIR /usr/src/app
+
+# Install app dependencies
+COPY client/package*.json ./
+RUN npm install
+
+# Bundle app source
+COPY client/ .
+
+# Build the app
+RUN npm run build
+
+# Set the backend WebSocket URL
+ARG BACKEND_WS_URL
+ENV BACKEND_WS_URL=${BACKEND_WS_URL}
+
+# Expose the port the app runs on
+EXPOSE 1234
+
+# Define the command to run the app
+CMD ["npm", "run", "start"]
