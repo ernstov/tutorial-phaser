@@ -1,0 +1,105 @@
+namespace: tutorial-phaser
+
+redis:
+  defines: runnable
+  inherits: redis/redis
+  metadata:
+    name: redis
+    description: >-
+      Redis in-memory data structure store, used as a database, cache, and
+      message broker.
+    icon: >-
+      https://cdn.icon-icons.com/icons2/2415/PNG/512/redis_original_wordmark_logo_icon_146369.png
+  variables:
+    redis_disable_commands:
+      type: string
+      value: FLUSHDB,FLUSHALL,CONFIG
+      description: ''
+    redis_empty_password:
+      type: string
+      value: 'yes'
+      description: ''
+    redis_instance_name:
+      type: string
+      value: master
+      description: ''
+    redis_io_thread:
+      type: string
+      value: '1'
+      description: ''
+    redis_io_threads_do_reads:
+      type: string
+      value: 'yes'
+      description: ''
+    redis_port:
+      type: int
+      value: 6379
+      description: ''
+
+client:
+  defines: runnable
+  metadata:
+    name: client
+    description: Front-end application using Phaser.
+    icon: https://emojiapi.dev/api/v1/robot.svg
+  containers:
+    client:
+      image: env-2758.registry.local/client:master-8084c30
+      build: .
+      dockerfile: Dockerfile.client
+  services:
+    http-server:
+      description: Port for serving the front-end application
+      container: client
+      port: 80
+      host-port: 80
+      publish: true
+      protocol: tcp
+  connections: {}
+  variables: {}
+
+server:
+  defines: runnable
+  metadata:
+    name: server
+    description: WebSocket server using Colyseus and Express.
+    icon: https://emojiapi.dev/api/v1/robot.svg
+  containers:
+    server:
+      image: env-2758.registry.local/server:master-8084c30
+      build: .
+      dockerfile: Dockerfile.server
+  services:
+    websocket-port:
+      description: Port for WebSocket connections
+      container: server
+      port: $port
+      host-port: $port
+      publish: true
+      protocol: tcp
+  connections:
+    websocket-connection:
+      target: tutorial-phaser/client
+      service: http-server
+      optional: true
+      description: WebSocket connection to the client service
+    redis-connection:
+      target: tutorial-phaser/redis
+      service: redis-svc
+      optional: true
+      description: >-
+        Connection to the Redis service for in-memory data storage and message
+        brokering
+  variables:
+    port:
+      env: PORT
+      type: int
+      value: <- connection-port("websocket-connection")
+      description: The port number on which the server listens for connections.
+
+stack:
+  defines: group
+  members:
+    - tutorial-phaser/redis
+    - tutorial-phaser/client
+    - tutorial-phaser/server
