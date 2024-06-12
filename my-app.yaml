@@ -1,0 +1,31 @@
+namespace: my-app
+my-app:
+  defines: runnable
+  metadata:
+    name: my-app
+    description: A multiplayer game using Colyseus and Phaser.
+    icon: https://emojiapi.dev/api/v1/video_game.svg
+  containers:
+    my-app:
+      build: .
+      image: env-1393.registry.local/my-app:master-8084c30
+      dockerfile: Dockerfile
+  services:
+    main:
+      container: my-app
+      port: <- $port
+      host-port: <- $port
+      publish: false
+      protocol: TCP
+      description: Main port for the application
+  variables:
+    dev-mode:
+      env: DEV_MODE
+      type: bool
+      description: Development mode switch
+      value: false
+    port:
+      env: PORT
+      type: string
+      description: Application main listen port
+      value: '!!!SETME!!!'
